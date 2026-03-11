@@ -218,6 +218,9 @@ class GaussianDiffusion(nn.Module):
         # Approximately 3 lines of code.
         ####################################################################
 
+        coeffs = extract(self.alphas_cumprod, t, x_start.shape)
+        x_t = torch.sqrt(coeffs) * x_start + torch.sqrt((1 - coeffs) * torch.ones(x_start.shape)) * noise
+        
         ####################################################################
         return x_t
 

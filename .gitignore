@@ -3,3 +3,4 @@ data
 pretrained_model
 venv
 .python-version
+.ipynb_checkpoints
