@@ -5,3 +5,6 @@ venv
 .python-version
 .ipynb_checkpoints
 __pycache__
+collect_submission.ipynb
+collectSubmission.sh
+
