@@ -103,6 +103,10 @@ class GaussianDiffusion(nn.Module):
         # Look at the coeffs in `__init__` method and use the `extract` function.
         ####################################################################
 
+        sqrt_one_minus_alphas_cumprod = extract(self.sqrt_one_minus_alphas_cumprod, t, x_t.shape)
+        sqrt_alphas_cumprod = extract(self.sqrt_alphas_cumprod, t, x_t.shape)
+        x_start = (x_t - sqrt_one_minus_alphas_cumprod * noise) / sqrt_alphas_cumprod
+
         ####################################################################
         return x_start
 
@@ -121,6 +125,10 @@ class GaussianDiffusion(nn.Module):
         # Transform x_t and noise to get x_start according to Eq.(4) and Eq.(14).
         # Look at the coeffs in `__init__` method and use the `extract` function.
         ####################################################################
+
+        sqrt_one_minus_alphas_cumprod = extract(self.sqrt_one_minus_alphas_cumprod, t, x_t.shape)
+        sqrt_alphas_cumprod = extract(self.sqrt_alphas_cumprod, t, x_t.shape)
+        pred_noise = (x_t - sqrt_alphas_cumprod * x_start) / sqrt_one_minus_alphas_cumprod
 
         ####################################################################
         return pred_noise
