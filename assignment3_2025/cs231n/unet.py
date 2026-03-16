@@ -180,9 +180,12 @@ class Unet(nn.Module):
             # Make sure to exactly follow this structure of ModuleList in order to
             # load a pretrained checkpoint.
             ##################################################################
-
-            ##################################################################
+            down_block = nn.ModuleList([ResnetBlock(dim_in, dim_in, context_dim),
+                                        ResnetBlock(dim_in, dim_in, context_dim),
+                                        Downsample(dim_in, dim_out)])
+            
             self.downs.append(down_block)
+            ##################################################################
 
         # Middle blocks
         mid_dim = dims[-1]
@@ -205,6 +208,10 @@ class Unet(nn.Module):
             # channels at the input of both ResnetBlocks.
             ##################################################################
 
+            up_block = nn.ModuleList([Upsample(dim_in, dim_out),
+                                      ResnetBlock(2 * dim_out, dim_out, context_dim),
+                                      ResnetBlock(2 * dim_out, dim_out, context_dim)])
+            
             self.ups.append(up_block)
             ##################################################################
 
@@ -281,6 +288,31 @@ class Unet(nn.Module):
         #      skip connection from the downsampling path.
         #    - Make sure to pass the context to each ResNet block.
         ##################################################################
+
+        buffer = []
+        pointer = -1
+        
+        for down_block in self.downs:
+            for layer in down_block:
+                if isinstance(layer, ResnetBlock):
+                    x = layer(x, context)
+                    buffer.append(x)
+                    pointer += 1
+                else:
+                    x = layer(x)
+
+        x = self.mid_block1(x, context)
+        x = self.mid_block2(x, context)
+        
+        for up_block in self.ups:
+            for layer in up_block:
+                if isinstance(layer, ResnetBlock):
+                    x = torch.concatenate((x, buffer[pointer]), axis=1)
+                    pointer -= 1
+
+                    x = layer(x, context)
+                else:
+                    x = layer(x)
 
         ##################################################################
 
